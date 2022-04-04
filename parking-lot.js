@@ -59,7 +59,7 @@ Please develop in either ReacJS or NodeJS. You will be required to explain your 
 
 const moment = require('moment')
 
-let ParkingSystem = function () {
+function ParkingSystem() {
     /**
      *  (b) The map of the parking slot. You are welcome to introduce a design that suits your approach. One suggested
       method, however, is to accept a list of tuples corresponding to the distance of each slot from every entry
@@ -118,16 +118,43 @@ let ParkingSystem = function () {
       i.e. the vehicle must be considered as if it did not leave. Otherwise, rates must be implemented as described.
 
  */
-ParkingSystem.prototype.calculateCharge = function (hrs, sizeCategory) {
-    debugger
+ParkingSystem.prototype.calculateCharge = function (hrs, vehicleInfo) {
+    /**
+     * Take note that exceeding hours are charged depending on parking slot size regardless of vehicle size.
+     */
+    const {
+        sizeCategory
+    } = vehicleInfo
     let threeBeyond = 40
-    if (hrs <= 3) return threeBeyond
+    if (hrs <= 3) {
+        this.billChargeLogs.push({
+            ...vehicleInfo,
+            hrs,
+            charge: threeBeyond
+        })
+        return threeBeyond
+    }
     const dayCharge = (totalHours, hrMultiplier, dayMultiplier = 5000) => {
         const days = +Math.abs(totalHours / 24).toFixed()
         const excessHours = totalHours - (days * 24)
         const costPerDay = days * dayMultiplier
         const costPerExcess = excessHours * hrMultiplier
-        return totalHours >= 3 ? (costPerDay + costPerExcess) - Math.abs((3 * hrMultiplier) - threeBeyond) : costPerDay + costPerExcess
+        const firstThreeHrCost = Math.abs((3 * hrMultiplier) - threeBeyond)
+        const charge = totalHours >= 3 ? (costPerDay + costPerExcess) - firstThreeHrCost : costPerDay + costPerExcess
+        this.billChargeLogs.push({
+            ...vehicleInfo,
+            days,
+            excessHours,
+            costPerDay,
+            costPerExcess,
+            totalHours,
+            hrMultiplier,
+            dayMultiplier,
+            firstThreeHrCost,
+            charge
+        })
+
+        return charge
 
     }
     switch (sizeCategory) {
@@ -174,14 +201,6 @@ ParkingSystem.prototype.setParkingLotSize = function (slotSizes = []) {
     let slotSizesValid = slotSizes.every(slot => this.sizes.includes(slot))
     const validLength = (slotSizes.length === this.parkingSlot.length) && slotSizes.length > 0
 
-    // console.table({
-    //     slotSizesValid,
-    //     slotSizeLength: slotSizes.length,
-    //     parkingSlotLength: this.parkingSlot.length,
-    //     validLength,
-    //     thisSlotSize: this.slotSizes.length
-    // })
-
     if (validLength && slotSizesValid) {
         /**
          * by using this function will modify vacantSlot adding object of 'sizeCategory
@@ -217,11 +236,6 @@ ParkingSystem.prototype.parkVehicle = function (vehicleInfo) {
     const parkingLotSizeValid = this.parkingSlot.length > 0 && this.parkingSlot.length || false
     const validSlotsAndParkingSize = (slotSizeValid && parkingLotSizeValid) && (slotSizeValid === parkingLotSizeValid)
     if (vehicleHasSize && this.sizes.includes(vehicleInfo.size) && validSlotsAndParkingSize) {
-        // console.table({
-        //     vacant: this.vacantSlot.length,
-        //     occupied: this.occupiedSlot.length,
-        //     ...vehicleInfo,
-        // })
 
         if (this.parkingSlot.length === (this.vacantSlot.length + this.occupiedSlot.length)) {
 
@@ -286,9 +300,7 @@ ParkingSystem.prototype.parkVehicle = function (vehicleInfo) {
                 default:
                     break;
             }
-            // console.table({
-            //     parkAt
-            // })
+
             let entryPayload = {
                 ...this.vacantSlot[parkAt.vacantIndex],
                 vehicleInfo,
@@ -307,12 +319,11 @@ ParkingSystem.prototype.parkVehicle = function (vehicleInfo) {
             if (entryPayload && entryPayload.charge) {
                 let timeDiff = Math.abs(moment(entryPayload.time).diff(moment(), 'hours'))
                 /**
-                 *  A vehicle
-                 must be assigned a possible and available slot closest to the parking entrance.
+                 *  (c) A vehicle leaving the parking complex and returning within one hour must be charged continuous rate,
+                i.e. the vehicle must be considered as if it did not leave. Otherwise, rates must be implemented as described.
                 */
-                if (timeDiff > 1) {
-                    debugger
-                    entryPayload.charge = this.calculateCharge(timeDiff, this.slotSizes)
+                if (timeDiff <= 1) {
+                    entryPayload.charge = this.calculateCharge(timeDiff, entryPayload)
                     entryPayload.time = moment().format('YYYY-MM-DD HH:mm:ss')
                 }
 
@@ -332,10 +343,20 @@ ParkingSystem.prototype.unparkVehicle = function (info) {
       i.e. the vehicle must be considered as if it did not leave. Otherwise, rates must be implemented as described.
      */
     const {
-        vehicleInfo
+        vehicleInfo,
+        time
     } = info
     const occupiedIndex = this.occupiedSlot.findIndex(x => x.vehicleInfo.plate === vehicleInfo.plate)
-    const charge = this.calculateCharge(4, info.sizeCategory)
+    let timeDiff
+    if (info && info.vehicleInfo && info.vehicleInfo.time) {
+        timeDiff = Math.abs(moment(info.vehicleInfo.time).diff(moment(), 'hours'))
+    }
+    else  timeDiff = Math.abs(moment(info.time).diff(moment(), 'hours'))
+    
+    let charge = this.calculateCharge(timeDiff, info)
+    // if (this.occupiedSlot[occupiedIndex] && this.occupiedSlot[occupiedIndex].charge > 0) {
+    //     charge += this.occupiedSlot[occupiedIndex].charge
+    // }
     const unparkPayload = {
         ...this.occupiedSlot[occupiedIndex],
         charge
@@ -343,53 +364,13 @@ ParkingSystem.prototype.unparkVehicle = function (info) {
     if (occupiedIndex !== -1) {
         this.vacantSlot.push(unparkPayload)
         this.occupiedSlot.splice(occupiedIndex, 1)
-        this.billChargeLogs.push(`Charge: ${charge}`)
     }
 }
 
+ParkingSystem.prototype.getChargeLogs = function () {
+    return this.billChargeLogs
+}
 
-
-/**inputs */
-let obj = new ParkingSystem()
-// console.log(obj.addEntryPoint())
-console.log(obj.mapParkingSlot([
-    [0, 2, 3],
-    [2, 0, 2],
-    [3, 3, 0],
-    [3, 1, 1]
-]))
-
-console.log(obj.setParkingLotSize([1, 2, 3, 1]))
-
-console.log(obj.parkVehicle({
-    size: 2,
-    plate: 'xyz12'
-}))
-
-console.log(obj.unparkVehicle(obj.occupiedSlot[0]))
-
-obj.parkVehicle({
-    size: 2,
-    plate: 'xyz123'
-})
-
-obj.parkVehicle({
-    size: 2,
-    plate: 'xyz123'
-})
-
-obj.parkVehicle({
-    size: 2,
-    plate: 'ffasdfasdf'
-})
-
-obj.unparkVehicle(obj.occupiedSlot[obj.occupiedSlot.length - 1])
-
-
-obj.parkVehicle({
-    size: 2,
-    plate: 'ffasdfasdf',
-    time: moment('2022-04-04 15:07:45').format('YYYY-MM-DD HH:mm:ss'),
-})
-
-console.log(obj.vacantSlot, obj.occupiedSlot)
+module.exports = {
+    ParkingSystem
+}
