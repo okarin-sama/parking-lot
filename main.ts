@@ -1,4 +1,4 @@
-const {ParkingSystem} = require('./parking-lot')
+const { ParkingSystem } = require('./parking-lot')
 const moment = require('moment')
 
 /**inputs */
@@ -42,7 +42,7 @@ obj.unparkVehicle(obj.occupiedSlot[obj.occupiedSlot.length - 1])
 obj.parkVehicle({
     size: 3,
     plate: 'ffasdfasdf',
-    time: moment('2022-04-04 15:07:45').format('YYYY-MM-DD HH:mm:ss'),
+    time: moment('2022-04-05 09:07:45').format('YYYY-MM-DD HH:mm:ss'),
 })
 
 obj.unparkVehicle(obj.occupiedSlot[obj.occupiedSlot.length - 1])

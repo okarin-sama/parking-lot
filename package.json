@@ -4,8 +4,7 @@
   "description": "Parking Lot Exam",
   "main": "parking-lot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx tsc parking-lot.ts"
+    "start": "tsc && node ./build/main.js"
   },
   "keywords": [
     "Parking",
