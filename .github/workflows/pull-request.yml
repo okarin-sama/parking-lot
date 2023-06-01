@@ -23,13 +23,13 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install Node Module
         run: npm i
-    #   - name: Run Eslint
-    #     run: npx eslint .
-    #   - name: Cache dependencies
-    #     uses: actions/cache@v2
-    #     with:
-    #       path: ~/.npm
-    #       key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-    #       restore-keys: |
-    #         ${{ runner.os }}-node-
+      - name: Run Eslint
+        run: npx eslint .
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
               
