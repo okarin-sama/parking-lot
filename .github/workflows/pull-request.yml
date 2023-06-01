@@ -1,0 +1,35 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+      - refactor-staging
+      - refactor-develop
+
+jobs:
+  lint-unit-test:
+    name: Lint & Unit Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Node v${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Node Module
+        run: npm i
+    #   - name: Run Eslint
+    #     run: npx eslint .
+    #   - name: Cache dependencies
+    #     uses: actions/cache@v2
+    #     with:
+    #       path: ~/.npm
+    #       key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+    #       restore-keys: |
+    #         ${{ runner.os }}-node-
+              
