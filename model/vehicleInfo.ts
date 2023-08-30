@@ -5,4 +5,4 @@ interface vehicleInfo {
     vehicleInfo: {
         
     }
-}
+}asdfasdf
