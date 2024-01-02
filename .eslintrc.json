@@ -1,0 +1,64 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [],
+  "overrides": [],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [],
+  "rules": {
+    "semi": ["error", "always"],
+    "quotes": "off",
+    "camelcase": "off",
+    "curly": ["error", "multi-or-nest"],
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ],
+    "arrow-parens": ["error", "always"],
+    "no-unused-vars": "off",
+    "no-undef": "error",
+    "no-sequences": "error",
+    "eqeqeq": "off",
+    "no-unused-expressions": "error",
+    "no-use-before-define": "error",
+    "no-useless-escape": "error",
+    "no-case-declarations": "off",
+    "no-const-assign": "error",
+    "array-callback-return": "error",
+    "no-return-assign": ["error", "except-parens"],
+    "no-fallthrough": "off",
+    "no-async-promise-executor": "error",
+    "prefer-regex-literals": "error",
+    "no-empty-pattern": "error",
+    "no-empty": "off",
+    "no-useless-catch": "error",
+    "no-ex-assign": "error",
+    "no-unreachable": "error",
+    "no-self-assign": "error",
+    "no-sparse-arrays": "error",
+    "prefer-const": [
+      "error",
+      {
+        "destructuring": "any",
+        "ignoreReadBeforeAssign": false
+      }
+    ],
+    "no-mixed-operators": "error",
+    "no-throw-literal": "off",
+    "n/no-callback-literal": "off", //on
+    "n/no-deprecated-api": "off", //on
+    "no-template-curly-in-string": "error",
+    "new-cap": "off",
+    "no-console": "off" //on
+  }
+}
